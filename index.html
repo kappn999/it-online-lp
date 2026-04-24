@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中学生ITオンライン部 — IT自由研究室</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a2e;
+  --ink2: #2d2d44;
+  --ink3: #555570;
+  --ink4: #8888aa;
+  --bg: #ffffff;
+  --bg2: #f4f6ff;
+  --bg3: #e8ecff;
+  --accent: #1a6e3c;
+  --accent2: #28a05a;
+  --accent3: #e0f5e9;
+  --pop1: #ff6b6b;
+  --pop2: #fff0f0;
+  --pop3: #4361ee;
+  --pop4: #eef0ff;
+  --pop5: #ffd166;
+  --pop6: #06d6a0;
+  --pop7: #8338ec;
+  --border: rgba(67,97,238,0.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.85;
+  font-size: 16px;
+}
+
+/* ===== 写真プレースホルダー ===== */
+.photo-placeholder {
+  width: 100%;
+  background: var(--bg3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink4);
+  font-size: 13px;
+  position: relative;
+  overflow: hidden;
+}
+.photo-placeholder::before {
+  content: '';
+  display: block;
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(0,0,0,0.03) 8px,rgba(0,0,0,0.03) 9px);
+}
+.photo-placeholder .ph-icon { font-size: 32px; position: relative; }
+.photo-placeholder .ph-label { font-size: 12px; color: var(--ink4); text-align: center; line-height: 1.5; position: relative; padding: 0 16px; }
+.photo-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 32px 0; }
+.photo-strip .photo-placeholder { height: 200px; }
+.photo-strip-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin: 32px 0; }
+.photo-strip-3 .photo-placeholder.main { height: 280px; }
+.photo-strip-3 .sub-col { display: flex; flex-direction: column; gap: 12px; }
+.photo-strip-3 .sub-col .photo-placeholder { height: 134px; }
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 40px 60px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1a9aa3 0%, #3dbcc3 45%, #52d4c8 100%);
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.025) 39px,rgba(255,255,255,0.025) 40px);
+  z-index: 0;
+}
+/* コードキャンバス */
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+  opacity: 0.18;
+}
+/* グラデーションオーバーレイ：左側テキストエリアを読みやすく */
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(105deg, rgba(10,80,88,0.75) 0%, rgba(10,100,110,0.45) 55%, rgba(10,120,130,0.0) 100%);
+  z-index: 2;
+}
+/* テキスト・バッジをオーバーレイの上に */
+.hero .container { position: relative; z-index: 3; }
+.hero-scroll { z-index: 3; }
+/* ===== HERO RIGHT PANEL ===== */
+.hero-character {
+  position: absolute;
+  right: 4%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 300px;
+}
+
+/* 生徒カード */
+.hero-students { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.stu-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 10px 14px;
+  backdrop-filter: blur(6px);
+  animation: slideIn 0.5s ease both;
+  animation-delay: var(--delay, 0s);
+}
+.stu-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.stu-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.stu-grade { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 500; }
+.stu-made  { font-size: 13px; color: #fff; font-weight: 700; }
+.stu-lv {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.stu-lv span { font-size: 16px; font-weight: 700; color: #ffd166; }
+
+/* コードウィンドウ */
+.hero-char-window {
+  background: rgba(22,27,34,0.9);
+  border: 1px solid rgba(40,160,90,0.45);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: 'Courier New', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: #cdd9e5;
+  width: 100%;
+  backdrop-filter: blur(4px);
+}
+.win-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.win-title { font-size: 11px; color: rgba(255,255,255,0.3); margin-left: 6px; font-family: 'Noto Sans JP', sans-serif; }
+.code-kw  { color: #f47067; }
+.code-fn  { color: #dcbdfb; }
+.code-str { color: #96d0ff; }
+.code-cm  { color: #6e7681; }
+.code-num { color: #6cb6ff; }
+.code-var { color: #e3b341; }
+@keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.cursor { display: inline-block; width: 7px; height: 13px; background: #28a05a; vertical-align: middle; animation: cursor-blink 1.1s ease infinite; margin-left: 2px; }
+
+/* ポップタグ */
+.hero-pop-tags {
+  display: flex; flex-wrap: wrap; gap: 7px; width: 100%;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.75); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.pop-tag {
+  background: var(--c);
+  color: var(--ct);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  animation-delay: calc(var(--i, 0) * 0.08s + 0.5s);
+}
+.pop-tag:nth-child(1){--i:0}
+.pop-tag:nth-child(2){--i:1}
+.pop-tag:nth-child(3){--i:2}
+.pop-tag:nth-child(4){--i:3}
+
+/* 実績バッジ */
+.hero-achievement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,209,102,0.12);
+  border: 1px solid rgba(255,209,102,0.3);
+  border-radius: 10px;
+  padding: 8px 14px;
+  width: 100%;
+}
+.ach-icon { font-size: 18px; }
+.ach-text { font-size: 12px; color: #ffd166; font-weight: 700; }
+
+@media (max-width: 860px) { .hero-character { display: none; } }
+.hero-label {
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 24px;
+  position: relative;
+}
+.hero-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: rgba(255,255,255,0.7);
+  vertical-align: middle;
+  margin-right: 10px;
+}
+.hero h1 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(30px, 5.5vw, 56px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+  margin-bottom: 16px;
+  position: relative;
+  text-shadow: 0 2px 12px rgba(10,70,80,0.25);
+}
+.hero h1 em { font-style: normal; color: #0f2d40; text-shadow: none; }
+.hero-sub {
+  font-size: clamp(15px, 2vw, 19px);
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 40px;
+  position: relative;
+  max-width: 520px;
+  line-height: 1.8;
+}
+.hero-meta { display: flex; flex-wrap: wrap; gap: 12px; position: relative; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: rgba(250,250,247,0.8);
+  letter-spacing: 0.03em;
+}
+.hero-scroll {
+  position: absolute;
+  bottom: 32px; left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(250,250,247,0.25);
+  letter-spacing: 0.12em;
+}
+.hero-scroll::after { content: ''; display: block; width: 40px; height: 1px; background: rgba(250,250,247,0.15); }
+
+/* ===== SECTION BASE ===== */
+section { padding: 88px 40px; }
+.container { max-width: 880px; margin: 0 auto; }
+.section-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-eyebrow::before { content: ''; display: block; width: 20px; height: 2px; background: var(--accent2); border-radius: 2px; }
+h2 {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(28px, 6vw, 44px);
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 28px;
+  letter-spacing: -0.01em;
+}
+h3 { font-size: clamp(18px, 4vw, 22px); font-weight: 700; margin-bottom: 10px; color: var(--ink); line-height: 1.35; }
+
+/* ===== P SECTION ===== */
+.section-p { background: var(--bg2); }
+.pain-list { list-style: none; display: flex; flex-direction: column; gap: 14px; margin: 32px 0; }
+.pain-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  background: var(--bg);
+  border-left: 4px solid var(--pop1);
+  font-size: clamp(15px, 4vw, 18px);
+  line-height: 1.8;
+  color: var(--ink2);
+  border-radius: 0 8px 8px 0;
+  box-shadow: 0 2px 8px rgba(255,107,107,0.08);
+}
+.pain-list li::before { content: '—'; color: var(--pop1); flex-shrink: 0; margin-top: 2px; font-weight: 700; }
+
+/* ===== A SECTION ===== */
+.section-a { background: linear-gradient(135deg,#ff6b6b 0%,#ee5a24 100%); color: #fff; }
+.section-a h2 { color: #fff; }
+.section-a .section-eyebrow { color: rgba(255,255,255,0.85); }
+.section-a .section-eyebrow::before { background: #fff; }
+.danger-box {
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 28px 32px;
+  margin: 32px 0;
+  border-radius: 12px;
+  position: relative;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(4px);
+}
+.danger-box::before {
+  content: '独学の落とし穴';
+  position: absolute;
+  top: -11px; left: 20px;
+  background: #ee5a24;
+  padding: 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.85);
+}
+.danger-list { list-style: none; display: flex; flex-direction: column; gap: 20px; }
+.danger-list li {
+  padding-left: 22px;
+  position: relative;
+  color: rgba(255,255,255,0.92);
+  font-size: clamp(15px, 4vw, 18px);
+  line-height: 1.9;
+}
+.danger-list li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 13px;
+  width: 8px; height: 2px;
+  background: var(--pop1);
+  border-radius: 2px;
+}
+.danger-list li strong { color: #fff; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.industry-note {
+  margin-top: 32px;
+  padding: 24px 28px;
+  background: rgba(255,255,255,0.15);
+  border-left: 4px solid #fff;
+  font-size: 15px;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.9;
+  border-radius: 0 8px 8px 0;
+  backdrop-filter: blur(4px);
+}
+.industry-note strong { color: #ffd166; }
+
+/* ===== SO SECTION ===== */
+.section-so { background: var(--bg); }
+.solution-core { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin: 40px 0; background: var(--border); border-radius: 16px; overflow: hidden; }
+.sol-card { background: var(--bg); padding: 32px 28px; }
+.sol-card .num { font-size: 12px; letter-spacing: 0.14em; color: var(--ink4); margin-bottom: 12px; }
+.sol-card h3 { font-size: clamp(20px, 4.5vw, 24px); margin-bottom: 10px; letter-spacing: -0.01em; }
+.sol-card p { font-size: clamp(14px, 3.5vw, 16px); color: var(--ink3); line-height: 1.85; }
+.sol-card.accent { background: var(--accent3); }
+.sol-card.accent h3 { color: var(--accent); }
+.flow-diagram { display: flex; align-items: stretch; gap: 0; margin: 40px 0; flex-wrap: wrap; }
+.flow-step {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+  padding: 22px 12px;
+  background: var(--bg2);
+  position: relative;
+  border-radius: 0;
+}
+.flow-step:first-child { border-radius: 12px 0 0 12px; }
+.flow-step:last-child  { border-radius: 0 12px 12px 0; }
+.flow-step:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -12px; top: 50%; transform: translateY(-50%);
+  font-size: 16px; color: var(--ink4); z-index: 1;
+}
+.flow-step .step-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+.flow-step .step-label { font-size: clamp(14px, 3.5vw, 17px); font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.flow-step .step-sub { font-size: clamp(12px, 3vw, 14px); color: var(--ink4); }
+
+/* ===== PHOTO SECTION ===== */
+.section-photo { background: var(--bg2); padding: 60px 40px; }
+.photo-caption { font-size: 13px; color: var(--ink4); margin-top: 10px; text-align: center; line-height: 1.6; }
+
+/* ===== CURRICULUM ===== */
+.section-curriculum { background: var(--bg2); }
+.curriculum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3px; background: var(--border); margin: 32px 0; border-radius: 16px; overflow: hidden; }
+.cur-card { background: var(--bg); padding: 26px 24px; }
+.cur-stage { font-size: 12px; letter-spacing: 0.18em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; font-weight: 700; }
+.cur-title { font-size: clamp(18px, 4vw, 21px); font-weight: 700; margin-bottom: 10px; color: var(--ink); line-height: 1.3; }
+.cur-desc { font-size: clamp(14px, 3.5vw, 15px); color: var(--ink3); line-height: 1.85; }
+.cur-tag { display: inline-block; margin-top: 12px; font-size: 11px; padding: 3px 10px; background: var(--accent3); color: var(--accent); border-radius: 20px; font-weight: 700; }
+
+/* ===== 1時間の構造 ===== */
+.section-hour { background: var(--bg); }
+.hour-flow { display: flex; gap: 3px; background: var(--border); margin: 32px 0; border-radius: 16px; overflow: hidden; }
+.hour-block { display: flex; flex-direction: column; padding: 26px 20px; background: var(--bg); }
+.hour-block.small { flex: 0 0 100px; }
+.hour-block.large { flex: 1; }
+.hour-block.medium { flex: 0 0 140px; }
+.hour-time { font-size: 11px; color: var(--ink4); letter-spacing: 0.08em; margin-bottom: 8px; font-weight: 500; }
+.hour-name { font-size: clamp(15px, 3.5vw, 18px); font-weight: 700; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
+.hour-detail { font-size: clamp(13px, 3vw, 15px); color: var(--ink3); line-height: 1.8; }
+.hour-block.accent-block { background: var(--accent3); }
+.hour-block.accent-block .hour-name { color: var(--accent); }
+
+/* ===== COMMUNITY CHAT ===== */
+.section-grad { background: linear-gradient(135deg,#4361ee 0%,#7209b7 100%); color: #fff; }
+.section-grad h2 { color: #fff; }
+.section-grad .section-eyebrow { color: rgba(255,255,255,0.8); }
+.section-grad .section-eyebrow::before { background: #ffd166; }
+/* 卒業説明ボックス */
+.grad-intro-box {
+  background: rgba(40,160,90,0.12);
+  border: 1px solid rgba(40,160,90,0.25);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin: 0 0 28px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.92);
+  line-height: 1.9;
+}
+.grad-intro-box strong { color: var(--accent2); }
+.chat-scene { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); padding: 28px 24px; margin: 8px 0 28px; display: flex; flex-direction: column; gap: 16px; border-radius: 12px; }
+.chat-row { display: flex; gap: 12px; align-items: flex-start; }
+.chat-av { width: 34px; height: 34px; border-radius: 50%; background: rgba(250,250,247,0.12); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: rgba(250,250,247,0.6); flex-shrink: 0; }
+.chat-bubble { background: rgba(255,255,255,0.08); border-radius: 0 10px 10px 10px; padding: 10px 16px; font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.75; max-width: 520px; }
+.chat-bubble .chat-name { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+.term { background: rgba(40,160,90,0.28); color: #7ecf9a; border-radius: 4px; padding: 1px 7px; font-size: 13px; font-weight: 700; }
+.grad-stages { display: flex; flex-direction: column; gap: 3px; background: rgba(255,255,255,0.08); margin: 0 0 28px; border-radius: 12px; overflow: hidden; }
+.grad-row { display: flex; align-items: flex-start; gap: 20px; padding: 24px 26px; background: rgba(26,26,24,0.55); }
+.grad-num { width: 32px; height: 32px; border: 2px solid #ffd166; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #ffd166; flex-shrink: 0; margin-top: 2px; font-weight: 700; }
+.grad-body h3 { font-size: clamp(18px, 4.5vw, 22px); color: #fff; margin-bottom: 8px; font-weight: 700; line-height: 1.3; }
+.grad-body p { font-size: clamp(14px, 3.5vw, 16px); color: rgba(255,255,255,0.8); line-height: 1.9; }
+.grad-final { margin-top: 8px; padding: 32px; border: 1px solid rgba(40,160,90,0.3); text-align: center; border-radius: 12px; }
+.grad-final p { font-family: 'Noto Serif JP', serif; font-size: clamp(17px, 2.5vw, 23px); color: #fafaf7; line-height: 1.7; margin-bottom: 12px; }
+.grad-final small { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+/* ===== N SECTION ===== */
+.section-n { background: var(--bg2); }
+.fit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; background: var(--border); margin: 32px 0; border-radius: 16px; overflow: hidden; }
+.fit-card { background: var(--bg); padding: 30px 26px; }
+.fit-card .fit-label { font-size: 13px; letter-spacing: 0.1em; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.fit-label.good { color: var(--accent); }
+.fit-label.good::before { content: '◎'; font-size: 15px; }
+.fit-label.bad { color: var(--ink4); }
+.fit-label.bad::before { content: '—'; font-size: 15px; }
+.fit-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+.fit-list li { font-size: clamp(14px, 3.5vw, 16px); color: var(--ink2); line-height: 1.8; padding-left: 14px; border-left: 3px solid var(--bg3); margin-bottom: 2px; }
+.fit-card.good .fit-list li { border-color: var(--accent2); }
+
+/* ===== SPECS ===== */
+.section-specs { background: var(--bg); }
+.specs-table { width: 100%; border-collapse: collapse; margin: 32px 0; }
+.specs-table tr { border-bottom: 1px solid var(--border); }
+.specs-table th { text-align: left; padding: 18px 0; font-size: clamp(12px, 3vw, 14px); color: var(--ink4); font-weight: 500; width: 130px; vertical-align: top; letter-spacing: 0.06em; }
+.specs-table td { padding: 18px 0; font-size: clamp(14px, 3.5vw, 16px); color: var(--ink2); line-height: 1.85; vertical-align: top; }
+.specs-table td strong { color: var(--ink); font-weight: 700; }
+
+/* ===== CTA ===== */
+.section-cta { background: linear-gradient(135deg,#ff6b6b 0%,#ffd166 100%); padding: 88px 40px; text-align: center; }
+.section-cta h2 { color: #1a1a2e; font-family: 'Noto Serif JP', serif; margin-bottom: 16px; }
+.section-cta p { color: rgba(26,26,46,0.75); font-size: 16px; margin-bottom: 40px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.85; }
+.cta-btn {
+  display: inline-block;
+  padding: 18px 52px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  border-radius: 40px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.cta-btn:hover { opacity: 0.88; transform: translateY(-2px); }
+.cta-note { margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.5); }
+
+/* ===== FOOTER ===== */
+footer { background: var(--ink); padding: 40px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.45); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero h1, .hero-sub, .hero-meta, .hero-label { animation: fadeUp 0.8s ease both; }
+.hero-label { animation-delay: 0.1s; }
+.hero h1    { animation-delay: 0.25s; }
+.hero-sub   { animation-delay: 0.4s; }
+.hero-meta  { animation-delay: 0.55s; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  section { padding: 56px 20px; }
+  .hero { padding: 72px 20px 56px; }
+  .container { max-width: 100%; }
+
+  /* タイポグラフィ：スマホ最優先 */
+  h2 { font-size: 26px !important; line-height: 1.3; margin-bottom: 22px; }
+  h3 { font-size: 19px !important; }
+  .section-eyebrow { font-size: 12px; padding: 5px 14px; margin-bottom: 14px; }
+
+  /* ヒーロー */
+  .hero h1 { font-size: 30px !important; }
+  .hero-sub { font-size: 16px !important; }
+  .hero-badge { font-size: 12px; padding: 6px 12px; }
+
+  /* nav cards：2列 */
+  .nav-cards { grid-template-columns: repeat(2,1fr); gap: 8px; }
+  .nav-card { padding: 16px 10px 14px; }
+  .nav-card .nav-icon { font-size: 28px !important; }
+  .nav-card .nav-title { font-size: 13px !important; }
+  .nav-card .nav-sub { display: none; }
+
+  /* solution */
+  .solution-core { grid-template-columns: 1fr; gap: 2px; }
+  .sol-card { padding: 24px 20px; }
+  .sol-card h3 { font-size: 20px !important; }
+
+  /* flow */
+  .flow-diagram { flex-direction: column; gap: 2px; }
+  .flow-step { border-radius: 12px !important; padding: 18px 16px; }
+  .flow-step:not(:last-child)::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -14px; transform: translateX(-50%); }
+  .flow-step .step-label { font-size: 16px !important; }
+
+  /* hour */
+  .hour-flow { flex-direction: column; }
+  .hour-block.small, .hour-block.medium { flex: none; }
+  .hour-block { padding: 20px 18px; }
+  .hour-name { font-size: 17px !important; }
+
+  /* curriculum */
+  .curriculum-grid { grid-template-columns: 1fr; }
+  .cur-title { font-size: 19px !important; }
+
+  /* grad */
+  .grad-row { padding: 20px 18px; gap: 14px; }
+  .grad-body h3 { font-size: 19px !important; }
+  .grad-final p { font-size: 20px !important; }
+  .grad-num { width: 30px; height: 30px; font-size: 14px; }
+
+  /* fit */
+  .fit-grid { grid-template-columns: 1fr; }
+  .fit-list li { font-size: 15px !important; padding: 4px 0 4px 14px; }
+
+  /* photopop */
+  .photopop-grid { grid-template-columns: 1fr; gap: 24px; }
+  .photopop-catch { font-size: 20px; }
+  .pp-made { font-size: 14px; }
+
+  /* photo */
+  .photo-strip, .photo-strip-3 { grid-template-columns: 1fr; }
+
+  /* specs */
+  .specs-table th { width: 90px; font-size: 12px; }
+  .specs-table td { font-size: 14px; }
+
+  /* cta */
+  .cta-btn { padding: 16px 36px; font-size: 16px; }
+
+  /* chat */
+  .chat-bubble { font-size: 14px; }
+  .chat-scene { padding: 20px 16px; }
+
+  /* pain list */
+  .pain-list li { font-size: 15px !important; padding: 16px 16px; }
+
+  /* danger list */
+  .danger-list li { font-size: 15px !important; }
+
+  /* wave divider非表示 */
+  .wave-divider { display: none; }
+}
+
+/* ===== PAGE NAV (目次カード) ===== */
+.section-nav {
+  background: var(--bg);
+  padding: 48px 40px;
+  border-bottom: 1px solid var(--border);
+}
+.nav-label {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  color: var(--ink4);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.nav-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  max-width: 880px;
+  margin: 0 auto;
+}
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 12px 18px;
+  background: var(--bg2);
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 0.18s, background 0.18s, transform 0.15s;
+  cursor: pointer;
+}
+.nav-card:hover {
+  border-color: var(--accent2);
+  background: var(--accent3);
+  transform: translateY(-3px);
+}
+.nav-card .nav-icon {
+  font-size: clamp(28px, 6vw, 36px);
+  line-height: 1;
+}
+.nav-card .nav-title {
+  font-size: clamp(13px, 3.5vw, 15px);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+  line-height: 1.4;
+}
+.nav-card .nav-sub {
+  font-size: clamp(11px, 2.8vw, 13px);
+  color: var(--ink4);
+  text-align: center;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .nav-cards { grid-template-columns: repeat(2, 1fr); }
+  .nav-cards .nav-card:last-child { grid-column: span 2; }
+  .section-nav { padding: 40px 24px; }
+}
+
+/* ===== PHOTO + POP SECTION ===== */
+.section-photopop {
+  background: linear-gradient(135deg,#0d7a82 0%,#0a5a62 100%);
+  padding: 72px 40px;
+}
+.photopop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  max-width: 880px;
+  margin: 0 auto;
+}
+.photopop-main-photo {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(40,160,90,0.35);
+}
+.photopop-main-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.photopop-caption {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 12px;
+  line-height: 1.65;
+  text-align: center;
+}
+.photopop-catch {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fafaf7;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+/* 生徒カード */
+.pp-students { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.pp-stu-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.pp-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.pp-stu-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pp-grade { font-size: 11px; color: rgba(255,255,255,0.45); }
+.pp-made  { font-size: 13px; color: #fff; font-weight: 700; }
+.pp-lv { font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; }
+.pp-lv span { font-size: 17px; font-weight: 700; color: #ffd166; }
+/* タグ */
+.pp-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+.pp-tag {
+  background: var(--c);
+  color: var(--ct);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 700;
+}
+/* 実績 */
+.pp-achievement {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,209,102,0.1);
+  border: 1px solid rgba(255,209,102,0.28);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #ffd166;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+/* 数字 */
+.pp-stats { display: flex; gap: 0; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; }
+.pp-stat { flex: 1; text-align: center; padding: 14px 8px; border-right: 1px solid rgba(255,255,255,0.07); }
+.pp-stat:last-child { border-right: none; }
+.pp-stat-num { display: block; font-size: 26px; font-weight: 700; color: #fafaf7; line-height: 1; margin-bottom: 4px; }
+.pp-stat-num small { font-size: 14px; }
+.pp-stat-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+@media (max-width: 700px) {
+  .photopop-grid { grid-template-columns: 1fr; gap: 32px; }
+  .section-photopop { padding: 56px 24px; }
+}
+
+/* ===== HERO ILLUSTRATION ===== */
+.hero-illust {
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: min(520px, 48vw);
+  pointer-events: none;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.3));
+}
+.hero-illust svg { width: 100%; height: auto; }
+@media (max-width: 900px) { .hero-illust { display: none; } }
+
+/* ===== SECTION DECORATIONS ===== */
+
+/* eyebrowをポップな丸バッジに */
+.section-eyebrow {
+  display: inline-flex !important;
+  background: var(--pop4);
+  border-radius: 20px;
+  padding: 6px 18px 6px 14px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: var(--pop3);
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.section-eyebrow::before { display: none !important; }
+
+/* 白セクションのeyebrowは緑 */
+.section-so .section-eyebrow,
+.section-curriculum .section-eyebrow,
+.section-hour .section-eyebrow,
+.section-specs .section-eyebrow {
+  background: var(--accent3);
+  color: var(--accent);
+}
+/* 赤セクション */
+.section-a .section-eyebrow { background: rgba(255,255,255,0.22); color: #fff; }
+/* 紫セクション */
+.section-grad .section-eyebrow { background: rgba(255,255,255,0.15); color: #ffd166; }
+/* オレンジセクション */
+.section-cta .section-eyebrow { background: rgba(26,26,46,0.12); color: #1a1a2e; }
+
+/* ドット背景 */
+.section-p,
+.section-curriculum,
+.section-n {
+  background-image: radial-gradient(circle, rgba(67,97,238,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 波型区切り（セクション間） */
+.wave-divider {
+  width: 100%;
+  line-height: 0;
+  overflow: hidden;
+}
+.wave-divider svg { display: block; width: 100%; }
+
+/* カード hover 共通 */
+.sol-card, .cur-card, .nav-card, .fit-card {
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.sol-card:hover, .cur-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(67,97,238,0.12); }
+
+/* sol-card のアクセント色 */
+.sol-card .num {
+  display: inline-block;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--pop3);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 36px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.sol-card:nth-child(1) .num { background: var(--pop3); }
+.sol-card:nth-child(2) .num { background: var(--accent2); }
+.sol-card:nth-child(3) .num { background: var(--pop5); color: #7a5800; }
+.sol-card:nth-child(4) .num { background: var(--pop7); }
+
+/* cur-card ステージバッジ色 */
+.cur-card:nth-child(1) .cur-stage { color: #4361ee; }
+.cur-card:nth-child(2) .cur-stage { color: #3a86ff; }
+.cur-card:nth-child(3) .cur-stage { color: #f72585; }
+.cur-card:nth-child(4) .cur-stage { color: #7209b7; }
+.cur-card:nth-child(5) .cur-stage { color: #06d6a0; color: #028a64; }
+.cur-card:nth-child(6) .cur-stage { color: #ff6b35; }
+
+/* cur-tag 各色 */
+.cur-card:nth-child(1) .cur-tag { background: #e8edff; color: #4361ee; }
+.cur-card:nth-child(2) .cur-tag { background: #e0f0ff; color: #3a86ff; }
+.cur-card:nth-child(3) .cur-tag { background: #ffe0f0; color: #f72585; }
+.cur-card:nth-child(4) .cur-tag { background: #f0e0ff; color: #7209b7; }
+.cur-card:nth-child(5) .cur-tag { background: #e0fff5; color: #028a64; }
+.cur-card:nth-child(6) .cur-tag { background: #fff0e8; color: #ff6b35; }
+
+/* hour-block アイコン装飾 */
+.hour-name::before { margin-right: 6px; }
+.hour-block.accent-block .hour-name::before { content: '📋'; }
+.hour-block.large:first-of-type .hour-name::before { content: '💻'; }
+.hour-block.medium .hour-name::before { content: '🎯'; }
+
+/* flow-step カラー */
+.flow-step:nth-child(1) { background: #fff0e8; }
+.flow-step:nth-child(2) { background: #e8edff; }
+.flow-step:nth-child(3) { background: #e0fff5; }
+.flow-step:nth-child(4) { background: #f0e0ff; }
+
+/* grad-row 交互 */
+.grad-stages .grad-row:nth-child(1) { background: rgba(255,255,255,0.1); }
+.grad-stages .grad-row:nth-child(2) { background: rgba(255,255,255,0.06); }
+.grad-stages .grad-row:nth-child(3) { background: rgba(255,255,255,0.1); }
+
+/* specs table ストライプ */
+.specs-table tr:nth-child(even) td,
+.specs-table tr:nth-child(even) th { background: var(--bg2); }
+
+/* nav-card カラーアイコン背景 */
+.nav-card:nth-child(1):hover { background: #fff0e8; border-color: var(--pop1); }
+.nav-card:nth-child(2):hover { background: #e8edff; border-color: var(--pop3); }
+.nav-card:nth-child(3):hover { background: #e0fff5; border-color: var(--accent2); }
+.nav-card:nth-child(4):hover { background: #f0e0ff; border-color: var(--pop7); }
+.nav-card:nth-child(5):hover { background: #fffbe8; border-color: var(--pop5); }
+
+/* 浮遊するデコアイコン（セクション装飾） */
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.deco-float { animation: float 3s ease-in-out infinite; display: inline-block; }
+.section-header-deco { text-align: right; margin-bottom: -20px; font-size: 40px; opacity: 0.15; user-select:none; }
+
+/* pain-list アイコン差し替え */
+.pain-list li::before { content: none; }
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-overlay"></div>
+
+  <div class="container">
+    <p class="hero-label">IT自由研究室 中学生ITオンライン部</p>
+    <h1>自分で進む力が、<br>一生ものになる。<br><em>だから、ひとりにしない。</em></h1>
+    <p class="hero-sub">現役エンジニア常駐・自学×伴走で<br>本物のITスキルを育てる場</p>
+    <div class="hero-meta">
+      <span class="hero-badge">中学1年〜高校生</span>
+      <span class="hero-badge">月2回 夜8:00〜 オンライン</span>
+      <span class="hero-badge">全国対応</span>
+      <span class="hero-badge">継続率98%・挫折ゼロ</span>
+    </div>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
+</section>
+
+
+
+<!-- ===== PHOTO + POP SECTION ===== -->
+<section class="section-photopop">
+  <div class="container">
+
+    <!-- 左：写真　右：生徒カード＋タグ -->
+    <div class="photopop-grid">
+
+      <!-- 写真エリア -->
+      <div class="photopop-left">
+        <div class="photopop-main-photo">
+          <img src="/mnt/user-data/uploads/1776397079930_image.png" alt="現役エンジニアが伴走するオンライン授業の様子">
+        </div>
+        <p class="photopop-caption">現役エンジニアが常駐。中学生〜高校生がオンラインで本物のITを学んでいます。</p>
+      </div>
+
+      <!-- 右：ポップ要素 -->
+      <div class="photopop-right">
+
+        <!-- タイトル -->
+        <p class="photopop-catch">こんな子たちが<br>学んでいます</p>
+
+        <!-- 生徒カード -->
+        <div class="pp-students">
+          <div class="pp-stu-card">
+            <div class="pp-avatar" style="background:#ffd166;">🧑‍💻</div>
+            <div class="pp-stu-info">
+              <span class="pp-grade">中学1年生</span>
+              <span class="pp-made">ゲームを自分で制作中！</span>
+            </div>
+            <div class="pp-lv">Lv<span>3</span></div>
+          </div>
+          <div class="pp-stu-card">
+            <div class="pp-avatar" style="background:#06d6a0;">👩‍💻</div>
+            <div class="pp-stu-info">
+              <span class="pp-grade">中学3年生</span>
+              <span class="pp-made">Webアプリを開発中！</span>
+            </div>
+            <div class="pp-lv">Lv<span>5</span></div>
+          </div>
+          <div class="pp-stu-card">
+            <div class="pp-avatar" style="background:#118ab2;">🧑‍🎮</div>
+            <div class="pp-stu-info">
+              <span class="pp-grade">高校1年生</span>
+              <span class="pp-made">AI・Robloxに挑戦中！</span>
+            </div>
+            <div class="pp-lv">Lv<span>7</span></div>
+          </div>
+        </div>
+
+        <!-- ポップタグ -->
+        <div class="pp-tags">
+          <span class="pp-tag" style="--c:#ffd166;--ct:#7a5800;">🎮 ゲーム制作</span>
+          <span class="pp-tag" style="--c:#06d6a0;--ct:#004d3a;">💻 JavaScript</span>
+          <span class="pp-tag" style="--c:#ef476f;--ct:#fff;">🤖 AI活用</span>
+          <span class="pp-tag" style="--c:#118ab2;--ct:#fff;">🌐 Webアプリ</span>
+          <span class="pp-tag" style="--c:#8338ec;--ct:#fff;">🕹️ Roblox</span>
+          <span class="pp-tag" style="--c:#fb5607;--ct:#fff;">📊 Excel</span>
+        </div>
+
+        <!-- 実績バッジ -->
+        <div class="pp-achievement">
+          <span>🏆</span>
+          <span>大会入賞・コンテスト実績あり</span>
+        </div>
+
+        <!-- 数字バッジ -->
+        <div class="pp-stats">
+          <div class="pp-stat">
+            <span class="pp-stat-num">98<small>%</small></span>
+            <span class="pp-stat-label">継続率</span>
+          </div>
+          <div class="pp-stat">
+            <span class="pp-stat-num">0</span>
+            <span class="pp-stat-label">挫折者</span>
+          </div>
+          <div class="pp-stat">
+            <span class="pp-stat-num">5<small>年目</small></span>
+            <span class="pp-stat-label">運営実績</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PAGE NAV (目次カード) ===== -->
+<section class="section-nav">
+  <p class="nav-label">このページでわかること</p>
+  <div class="nav-cards">
+    <a class="nav-card" href="#section-solution">
+      <span class="nav-icon">💡</span>
+      <span class="nav-title">学び方の<br>仕組み</span>
+      <span class="nav-sub">自学×伴走とは</span>
+    </a>
+    <a class="nav-card" href="#section-curriculum">
+      <span class="nav-icon">📚</span>
+      <span class="nav-title">カリキュラム</span>
+      <span class="nav-sub">JS→ゲームまで</span>
+    </a>
+    <a class="nav-card" href="#section-hour">
+      <span class="nav-icon">🕐</span>
+      <span class="nav-title">1時間の流れ</span>
+      <span class="nav-sub">放置じゃない証拠</span>
+    </a>
+    <a class="nav-card" href="#section-grad">
+      <span class="nav-icon">🎓</span>
+      <span class="nav-title">卒業の基準</span>
+      <span class="nav-sub">自学マスターとは</span>
+    </a>
+    <a class="nav-card" href="#section-fit">
+      <span class="nav-icon">✅</span>
+      <span class="nav-title">向いている子</span>
+      <span class="nav-sub">正直にお伝えします</span>
+    </a>
+  </div>
+</section>
+
+
+
+<!-- ===== P: 問題提起 ===== -->
+<section class="section-p">
+  <div class="container">
+    <p class="section-eyebrow">Problem</p>
+    <h2>「自分で勉強しているのに、<br>なぜか伸びない」</h2>
+    <ul class="pain-list">
+      <li>😮 YouTubeで見て「わかった気」になっても、いざ自分で作れない</li>
+      <li>😓 何週間も同じところで止まったまま、そのまま辞めていく</li>
+      <li>🤔 何をやればいいかわからず、とりあえず検索しているだけになっている</li>
+      <li>😱 エラーが出ても何を調べればいいかわからない——言葉にすらできない</li>
+    </ul>
+    <p style="font-size:16px; color:var(--ink2); line-height:1.9;">
+      これは意欲の問題でも、頭の問題でもありません。<br>
+      <strong>「正しい方向に進んでいるか、確かめる仕組みがない」</strong>ことが原因です。
+    </p>
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 48" preserveAspectRatio="none" height="48"><path d="M0,0 C360,48 1080,48 1440,0 L1440,48 L0,48 Z" fill="#ff6b6b"/></svg></div>
+<!-- ===== A: あぶり立て ===== -->
+<section class="section-a">
+  <div class="container">
+    <p class="section-eyebrow">Agitation</p>
+    <h2>自学は最強の学び方です。<br>でも、落とし穴があります。</h2>
+    <div class="danger-box">
+      <ul class="danger-list">
+        <li><strong>間違った方向に進んでいても、自分では気づけない。</strong><br>誰かに確認してもらう仕組みがないと、何ヶ月も遠回りを続ける。</li>
+        <li><strong>「何を聞けばいいか」がわからなければ、AIにも聞けない。</strong><br>壁打ちできない状態では、ネットにいくら情報があっても使えない。</li>
+        <li><strong>ひとりで詰まり続けると、挫折する。</strong><br>スキルではなく「自分には向いていない」という誤った結論を出してしまう。</li>
+      </ul>
+    </div>
+    <div class="industry-note">
+      IT業界で伸びる人は、<strong>「自分で学べる人」</strong>です。<br>
+      でも「自分で学べる人」になるためには、最初に正しく進む経験が必要です。<br>
+      誰かと一緒に、正しい方向を確認しながら進んだ人が、やがてひとりで走れるようになる。
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 48" preserveAspectRatio="none" height="48"><path d="M0,0 C360,48 1080,48 1440,0 L1440,48 L0,48 Z" fill="#ffffff"/></svg></div>
+<!-- ===== SO: 解決策 ===== -->
+<section class="section-so" id="section-solution">
+  <div class="container">
+    <p class="section-eyebrow">Solution</p>
+    <h2>「自学」と「伴走」を<br>セットにした場が、ここです。</h2>
+    <div class="solution-core">
+      <div class="sol-card">
+        <p class="num">01</p>
+        <h3>自分で進む</h3>
+        <p>先生が「次はこれをやろう」とは言いません。今日何をやるかを自分で決めるところから始まります。手を動かした時間が、そのままスキルになります。</p>
+      </div>
+      <div class="sol-card accent">
+        <p class="num">02</p>
+        <h3>詰まったら即解決</h3>
+        <p>現役エンジニアの先生が常駐しています。「何がわからないかわからない」状態でも、一緒に整理します。3分以内に応答します。</p>
+      </div>
+      <div class="sol-card">
+        <p class="num">03</p>
+        <h3>方向を毎回確認する</h3>
+        <p>1時間の最後に必ず先生と1対1の時間を設けます。「正しく進んでいるか」「次は何をやるか」を毎回確かめます。迷子のまま終わりません。</p>
+      </div>
+      <div class="sol-card">
+        <p class="num">04</p>
+        <h3>聞き方を育てる</h3>
+        <p>「〇〇をしようとして、△△を試したら□□になった」と言えるようにします。AIにもコミュニティにも正しく聞けるこの力が、一生の武器になります。</p>
+      </div>
+    </div>
+    <div class="flow-diagram">
+      <div class="flow-step">
+        <span class="step-icon" style="font-size:32px;">📋</span>
+        <div class="step-label">チェックイン</div>
+        <div class="step-sub">今日の目標を宣言</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-icon" style="font-size:32px;">💻</span>
+        <div class="step-label">自走タイム</div>
+        <div class="step-sub">45分 手を動かす</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-icon" style="font-size:32px;">🔁</span>
+        <div class="step-label">中間確認</div>
+        <div class="step-sub">詰まりを即解決</div>
+      </div>
+      <div class="flow-step">
+        <span class="step-icon" style="font-size:32px;">🎯</span>
+        <div class="step-label">1対1タイム</div>
+        <div class="step-sub">方向確認・次回設定</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CURRICULUM ===== -->
+<section class="section-curriculum" id="section-curriculum">
+  <div class="container">
+    <p class="section-eyebrow">Curriculum</p>
+    <h2>Scratchの次から、<br>本物のエンジニアの言語へ。</h2>
+    <p style="font-size:15px; color:var(--ink3); margin-bottom:8px; line-height:1.85;">
+      Scratchで培った「プログラミングの考え方」をそのまま活かして、
+      現場で使われるJavaScriptへ移行します。ゲーム制作を通じてWebアプリまで到達する、
+      一貫したカリキュラムです。
+    </p>
+    <div class="curriculum-grid">
+      <div class="cur-card">
+        <p class="cur-stage">Stage 01</p>
+        <p class="cur-title">アプリ開発入門</p>
+        <p class="cur-desc">HTMLの仕組み・デバッガーの使い方から。スマートフォンアプリとして動く画面を最初から作ります。</p>
+        <span class="cur-tag">HTML / alert / デバッガー</span>
+      </div>
+      <div class="cur-card">
+        <p class="cur-stage">Stage 02</p>
+        <p class="cur-title">HTML・CSS入門</p>
+        <p class="cur-desc">Webページの構造とデザインを理解。リンク・画像・レイアウトを自分で組み立てられるようになります。</p>
+        <span class="cur-tag">HTML / CSS / セレクタ</span>
+      </div>
+      <div class="cur-card">
+        <p class="cur-stage">Stage 03</p>
+        <p class="cur-title">JavaScript基礎</p>
+        <p class="cur-desc">変数・条件分岐・関数・イベントを習得。「今日の日付を取得する」など実用的なプログラムを作ります。</p>
+        <span class="cur-tag">JS / 変数 / 関数 / DOM</span>
+      </div>
+      <div class="cur-card">
+        <p class="cur-stage">Stage 04</p>
+        <p class="cur-title">データ構造・繰り返し</p>
+        <p class="cur-desc">配列・ループ・演算子を使いこなし、複雑なロジックを自分で設計できるようになります。</p>
+        <span class="cur-tag">配列 / for文 / 演算子</span>
+      </div>
+      <div class="cur-card">
+        <p class="cur-stage">Stage 05</p>
+        <p class="cur-title">Canvas・ゲームプログラミング</p>
+        <p class="cur-desc">ブラウザで動く本格ゲームを制作。15パズル・神経衰弱・シューティングなど自分の作品に仕上げます。</p>
+        <span class="cur-tag">Canvas / ゲーム設計 / 実装</span>
+      </div>
+      <div class="cur-card">
+        <p class="cur-stage">Stage 06</p>
+        <p class="cur-title">サンプルアプリ制作</p>
+        <p class="cur-desc">ブロック崩しをベースに、ゼロから自分でアレンジした作品を完成させます。ポートフォリオになります。</p>
+        <span class="cur-tag">アレンジ / 自走 / 発表</span>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--ink4); line-height:1.8; margin-top:8px;">
+      ※ 各自のペースで進めます。全員が同じ進度である必要はありません。<br>
+      ※ Progate「JavaScript II」（有料版）を参考教材として使用する段階があります。
+    </p>
+  </div>
+</section>
+
+<!-- ===== 1時間の構造 ===== -->
+<section class="section-hour" id="section-hour">
+  <div class="container">
+    <p class="section-eyebrow">Structure</p>
+    <h2>「放置」ではなく、<br>「自走を信じて見守る」1時間。</h2>
+    <div class="hour-flow">
+      <div class="hour-block small accent-block">
+        <p class="hour-time">0 → 5分</p>
+        <p class="hour-name">チェックイン</p>
+        <p class="hour-detail">全体<br>チャットで<br>目標を宣言</p>
+      </div>
+      <div class="hour-block large">
+        <p class="hour-time">5 → 25分</p>
+        <p class="hour-name">自走タイム（前半）</p>
+        <p class="hour-detail">各自が今日の目標に向かって手を動かす。質問はチャットかマイクでいつでも。</p>
+      </div>
+      <div class="hour-block small" style="background:var(--bg3); flex:0 0 88px;">
+        <p class="hour-time">25分</p>
+        <p class="hour-name" style="font-size:13px;">中間<br>声かけ</p>
+        <p class="hour-detail" style="font-size:12px;">空気を<br>崩す<br>一手</p>
+      </div>
+      <div class="hour-block large">
+        <p class="hour-time">25 → 50分</p>
+        <p class="hour-name">自走タイム（後半）</p>
+        <p class="hour-detail">引き続き自走。先生は全員の画面と進捗を把握しながら待機。</p>
+      </div>
+      <div class="hour-block medium accent-block">
+        <p class="hour-time">50 → 60分</p>
+        <p class="hour-name">1対1<br>ブレイクアウト</p>
+        <p class="hour-detail">「今日どこまで進んだ？」「次は何をやりたい？」で締める</p>
+      </div>
+    </div>
+    <p style="font-size:14px; color:var(--ink3); line-height:1.9; margin-top:16px; padding:22px 24px; background:var(--bg2); border-left:4px solid var(--accent2); border-radius:0 8px 8px 0;">
+      チェックインはテキスト入力形式のため、人前で話すのが苦手な子も全員参加できます。<br>
+      最後の1対1は「わからなかったところは？」とは聞きません。「次何をやりたい？」から始めると、困りごとは自然に出てきます。
+    </p>
+  </div>
+</section>
+
+<!-- ===== 卒業基準 ===== -->
+<section class="section-grad" id="section-grad">
+  <div class="container">
+    <p class="section-eyebrow">Graduation</p>
+    <h2>ゴールは「卒業できること」です。</h2>
+
+    <div class="grad-intro-box">
+      IT業界では、<strong>自分で学べる人が圧倒的に有利</strong>な世界です。<br>
+      ネットにはいくらでも学べる環境がある。AIにも聞ける。でも、<strong>「何を・どう聞けばいいか」がわからなければ、何も使えない</strong>。<br><br>
+      ITオンライン部の本当のゴールは、この状態を卒業すること。<br>
+      下のようなIT系コミュニティの会話が「だいたいわかる」「調べれば進めそう」と感じられるようになったとき、このコースを卒業し、<strong>自学できる人</strong>になったということです。
+    </div>
+
+    <p style="font-size:14px; color:rgba(255,255,255,0.65); margin-bottom:12px; line-height:1.8;">IT系コミュニティで実際に飛び交う会話 ↓</p>
+
+    <div class="chat-scene">
+      <div class="chat-row">
+        <div class="chat-av">A</div>
+        <div class="chat-bubble">
+          <p class="chat-name">Aさん</p>
+          <span class="term">非同期処理</span>で詰まってる。<span class="term">await</span>つけたのに順番通りに動かなくて
+        </div>
+      </div>
+      <div class="chat-row">
+        <div class="chat-av">B</div>
+        <div class="chat-bubble">
+          <p class="chat-name">Bさん</p>
+          <span class="term">forEach</span>の中で<span class="term">await</span>してない？それ<span class="term">for...of</span>に変えたら直るよ
+        </div>
+      </div>
+      <div class="chat-row">
+        <div class="chat-av">A</div>
+        <div class="chat-bubble">
+          <p class="chat-name">Aさん</p>
+          直った！あと<span class="term">エラーハンドリング</span>って<span class="term">try-catch</span>でいい？
+        </div>
+      </div>
+      <div class="chat-row">
+        <div class="chat-av">C</div>
+        <div class="chat-bubble">
+          <p class="chat-name">Cさん</p>
+          <span class="term">本番</span>で落ちると泣くから絶対書いて。<span class="term">ボトルネック</span>の特定もしとくといい
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:14px; color:rgba(255,255,255,0.65); margin-bottom:20px; line-height:1.85;">
+      今はこの会話が全部わからなくて当然です。でも、これが「なんとなくわかる」「わからなくても調べられそう」になったとき、ITオンライン部は卒業です。
+    </p>
+
+    <div class="grad-stages">
+      <div class="grad-row">
+        <div class="grad-num">1</div>
+        <div class="grad-body">
+          <h3>用語で状況を説明できる</h3>
+          <p>「なんか動かない」ではなく「条件分岐の中でループが止まっている」と言える。言葉にできると、検索もAIへの質問もできるようになる。</p>
+        </div>
+      </div>
+      <div class="grad-row">
+        <div class="grad-num">2</div>
+        <div class="grad-body">
+          <h3>AIやコミュニティに正しく聞ける</h3>
+          <p>「〇〇をしようとして、△△を試したら□□というエラーが出た」の型で聞ける。この聞き方ができる人は、どこへ行っても伸びていける。</p>
+        </div>
+      </div>
+      <div class="grad-row">
+        <div class="grad-num">3</div>
+        <div class="grad-body">
+          <h3>上の会話の意味がだいたいわかる</h3>
+          <p>全部知らなくていい。「これは調べればわかりそう」「これは聞けばいい」の判断ができる状態。知らないことを怖がらなくなること。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grad-final">
+      <p>「聞き方を知っている人」は、<br>どこへ行っても伸びていける。</p>
+      <small>卒業できる子を育てることが、私たちの仕事です。 — IT自由研究室 代表 中島ゆき</small>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 48" preserveAspectRatio="none" height="48"><path d="M0,0 C360,48 1080,48 1440,0 L1440,48 L0,48 Z" fill="#f4f6ff"/></svg></div>
+<!-- ===== N: 絞り込み ===== -->
+<section class="section-n" id="section-fit">
+  <div class="container">
+    <p class="section-eyebrow">For Whom</p>
+    <h2>こんな子に向いています。</h2>
+    <div class="fit-grid">
+      <div class="fit-card good">
+        <p class="fit-label good">向いている</p>
+        <ul class="fit-list">
+          <li>ITやプログラミングに興味があるが、何から始めればいいかわからない</li>
+          <li>将来IT系に進みたいと思っている中学生・高校生</li>
+          <li>Scratchは卒業して、次のステップに進みたい</li>
+          <li>自分のペースで、本物のスキルを身につけたい</li>
+          <li>学校や塾では物足りないと感じている</li>
+        </ul>
+      </div>
+      <div class="fit-card">
+        <p class="fit-label bad">向いていないかもしれない</p>
+        <ul class="fit-list">
+          <li>先生に「次はこれをやって」と全部指示してほしい</li>
+          <li>指示がないと動けない学習スタイルを変えたくない</li>
+          <li>とにかく学校のテストの点数を上げたい</li>
+        </ul>
+        <p style="font-size:14px; color:var(--ink4); margin-top:16px; line-height:1.75;">
+          正直にお伝えしています。合わない子に無理に来てもらっても、お互いにとって良いことがないからです。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wave-divider"><svg viewBox="0 0 1440 48" preserveAspectRatio="none" height="48"><path d="M0,0 C360,48 1080,48 1440,0 L1440,48 L0,48 Z" fill="#ffffff"/></svg></div>
+<!-- ===== SPECS ===== -->
+<section class="section-specs">
+  <div class="container">
+    <p class="section-eyebrow">Details</p>
+    <h2>基本情報</h2>
+    <table class="specs-table">
+      <tr>
+        <th>対象</th>
+        <td><strong>中学1年生〜高校生</strong>（全国対応）</td>
+      </tr>
+      <tr>
+        <th>開催日時</th>
+        <td><strong>月2回・夜8:00〜9:00</strong>（他の塾・部活との両立可能）</td>
+      </tr>
+      <tr>
+        <th>形式</th>
+        <td>オンライン（Zoom）・個別タイム毎回あり</td>
+      </tr>
+      <tr>
+        <th>先生</th>
+        <td>現役エンジニア常駐。質問には<strong>3分以内に応答</strong>します</td>
+      </tr>
+      <tr>
+        <th>カリキュラム</th>
+        <td>HTML / CSS / JavaScript → Canvas → ゲーム制作・アプリ制作<br>
+        <span style="font-size:13px; color:var(--ink4);">※ 各自のペースで進行。進度に合わせて教材を提示します</span></td>
+      </tr>
+      <tr>
+        <th>継続率</th>
+        <td><strong>98%・挫折ゼロ</strong>のサポート体制</td>
+      </tr>
+      <tr>
+        <th>運営</th>
+        <td>IT自由研究室（代表：中島ゆき）<br>
+        <span style="font-size:13px; color:var(--ink4);">東京都八王子市 / 2021年開校・運営5年目</span></td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section-cta">
+  <div class="container" style="text-align:center;">
+    <h2>まず一度、体験してみてください。</h2>
+    <p>「今日何をやるか」を自分で決めるところから始まります。<br>体験授業は、普段の授業と同じ形式で行います。</p>
+    <a href="#" class="cta-btn">体験授業に申し込む</a>
+    <p class="cta-note">IT自由研究室 中学生ITオンライン部 — 全国対応</p>
+  </div>
+</section>
+
+<!-- ===== 写真セクション2（最後のイメージ） ===== -->
+<section style="background:var(--bg2); padding:48px 40px;">
+  <div class="container">
+    <div class="photo-strip">
+      <div class="photo-placeholder" style="height:180px;">
+        <!-- <img src="your-photo-4.jpg" alt="生徒の様子"> -->
+        <span class="ph-icon">👨‍💻</span>
+        <span class="ph-label">生徒の制作の様子<br>（授業中のスクリーンショット等）</span>
+      </div>
+      <div class="photo-placeholder" style="height:180px;">
+        <!-- <img src="your-photo-5.jpg" alt="作品発表"> -->
+        <span class="ph-icon">🏆</span>
+        <span class="ph-label">大会・コンテスト参加の様子<br>または受賞作品</span>
+      </div>
+    </div>
+    <p class="photo-caption">IT自由研究室では、コンテスト参加・作品制作を通じてリアルな経験を積みます。</p>
+  </div>
+</section>
+
+<footer>
+  <p>© IT自由研究室　代表：中島ゆき　東京都八王子市千人町2-2-13 エリア248 1階</p>
+</footer>
+
+
+<script>
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // コードスニペット（日本語＋英語混在）
+  const snippets = [
+    'function createGame() {',
+    '  const player = { level: 3 }',
+    '  if (score > 100) {',
+    '    nextStage()',
+    '  }',
+    '}',
+    'for (let i = 0; i < 10; i++) {',
+    '  enemies.push(new Enemy())',
+    '}',
+    'const canvas = document.getElementById("game")',
+    'ctx.fillRect(x, y, width, height)',
+    'addEventListener("keydown", move)',
+    '// 今日の目標: ゲーム完成！',
+    'let score = 0',
+    'function checkCollision(a, b) {',
+    '  return a.x < b.x + b.w',
+    '}',
+    'import { useState } from "react"',
+    'async function fetchData() {',
+    '  const res = await fetch(url)',
+    '}',
+    'console.log("クリア！")',
+    'const map = arr.map(x => x * 2)',
+    'document.querySelector(".btn")',
+    'setInterval(update, 1000/60)',
+    'Math.random() * 100 | 0',
+    '// Scratch → JavaScript',
+    'class Sprite { constructor() {} }',
+    'localStorage.setItem("hi", score)',
+  ];
+
+  // 列データ
+  const FONT_SIZE = 14;
+  const LINE_H = 22;
+  let cols = [];
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const colCount = Math.ceil(canvas.width / 320) + 1;
+    cols = [];
+    for (let c = 0; c < colCount; c++) {
+      const lines = [];
+      const count = 18 + Math.floor(Math.random() * 10);
+      for (let i = 0; i < count; i++) {
+        lines.push(snippets[Math.floor(Math.random() * snippets.length)]);
+      }
+      cols.push({
+        x: c * 320 + Math.random() * 80 - 40,
+        y: Math.random() * -canvas.height,
+        speed: 0.3 + Math.random() * 0.4,
+        lines,
+        alpha: 0.12 + Math.random() * 0.18,
+        highlight: Math.floor(Math.random() * count),
+      });
+    }
+  }
+
+  // カラー（暗めのコードハイライト風）
+  const colors = {
+    kw:  'rgba(244,112,103,IDX)',
+    fn:  'rgba(220,189,251,IDX)',
+    cm:  'rgba(110,118,129,IDX)',
+    num: 'rgba(108,182,255,IDX)',
+    str: 'rgba(150,208,255,IDX)',
+    def: 'rgba(180,190,200,IDX)',
+  };
+  function lineColor(text, alpha) {
+    const a = alpha.toFixed(2);
+    if (text.startsWith('//')) return colors.cm.replace('IDX', a);
+    if (/^(function|const|let|var|if|for|return|class|async|import)/.test(text.trim()))
+      return colors.kw.replace('IDX', a);
+    if (/["']/.test(text)) return colors.str.replace('IDX', a);
+    if (/\d/.test(text) && !/[a-zA-Z]/.test(text.replace(/[\s{}()=<>]/g,'')))
+      return colors.num.replace('IDX', a);
+    return colors.def.replace('IDX', a);
+  }
+
+  let raf;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${FONT_SIZE}px 'Courier New', monospace`;
+
+    cols.forEach(col => {
+      col.lines.forEach((line, i) => {
+        const y = col.y + i * LINE_H;
+        if (y < -LINE_H || y > canvas.height + LINE_H) return;
+        const isHi = i === col.highlight;
+        const alpha = isHi ? col.alpha * 2.2 : col.alpha;
+        ctx.fillStyle = lineColor(line, Math.min(alpha, 0.7));
+        ctx.fillText(line, col.x, y);
+      });
+      col.y += col.speed;
+      // ループ
+      const totalH = col.lines.length * LINE_H;
+      if (col.y > canvas.height + totalH * 0.3) {
+        col.y = -totalH * 0.7;
+        col.highlight = Math.floor(Math.random() * col.lines.length);
+      }
+    });
+    raf = requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  resize();
+  draw();
+})();
+</script>
+
+</body>
+</html>
